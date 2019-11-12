@@ -10,7 +10,6 @@ namespace mvl
 	public:
 		// Constructors
 		DataMatrix();
-		DataMatrix(T t[M][N]);
 
 		// Copy constructor
 		DataMatrix(const DataMatrix<T,M,N>& d);
@@ -30,7 +29,6 @@ namespace mvl
 	public:
 		// Constructors
 		AbstractVector();
-		AbstractVector(T t[M][N]);
 
 		// Copy semantics
 		AbstractVector(const AbstractVector<T,M,N>& v);

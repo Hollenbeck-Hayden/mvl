@@ -12,14 +12,6 @@ namespace mvl
 	}
 
 	template<typename T, size_t M, size_t N>
-	DataMatrix<T,M,N>::DataMatrix(T t[M][N])
-	{
-		for (size_t i = 0; i < M; i++)
-			for (size_t j = 0; j < N; j++)
-				(*this)(i,j) = t[j][i];
-	}
-
-	template<typename T, size_t M, size_t N>
 	DataMatrix<T,M,N>::DataMatrix(const DataMatrix<T,M,N>& d)
 	{
 		for (size_t i = 0; i < M; i++)
@@ -53,12 +45,6 @@ namespace mvl
 	AbstractVector<T,M,N>::AbstractVector()
 	{
 		mat = std::make_unique<DataMatrix<T,M,N>>();
-	}
-
-	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,N>::AbstractVector(T t[M][N])
-	{
-		mat = std::make_unique<DataMatrix<T,M,N>>(t);
 	}
 
 	template<typename T, size_t M, size_t N>
