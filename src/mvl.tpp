@@ -8,9 +8,7 @@ namespace mvl
 	{
 		for (size_t i = 0; i < M; i++)
 			for (size_t j = 0; j < N; j++)
-				(*this)(i,j) = 0;
-	}
-
+				(*this)(i,j) = 0; } 
 	template<typename T, size_t M, size_t N>
 	DataMatrix<T,M,N>::DataMatrix(const DataMatrix<T,M,N>& d)
 	{
@@ -96,7 +94,7 @@ namespace mvl
 	AbstractVector<T,1,N> AbstractVector<T,M,N>::getRow(size_t i) const
 	{
 		AbstractVector<T,1,N> v;
-		for (size_t j = 0; j < N; i++)
+		for (size_t j = 0; j < N; j++)
 			v(0,j) = (*this)(i,j);
 		return v;
 	}
@@ -106,7 +104,7 @@ namespace mvl
 	{
 		AbstractVector<T,M,1> v;
 		for (size_t j = 0; j < M; j++)
-			v(j,0) = (*this)(i,j);
+			v(j,0) = (*this)(j,i);
 		return v;
 	}
 
@@ -114,7 +112,7 @@ namespace mvl
 	void AbstractVector<T,M,N>::setRow(size_t i, const AbstractVector<T,1,N>& row)
 	{
 		for (size_t j = 0; j < N; j++)
-			(*this)(i,j) = row(0,i);
+			(*this)(i,j) = row(0,j);
 	}
 
 	template<typename T, size_t M, size_t N>
@@ -153,7 +151,7 @@ namespace mvl
 	}
 
 	template<typename T, size_t M, size_t N>
-	bool AbstractVector<T,M,N>::operator==(const AbstractVector<T,M,N>& v)
+	bool AbstractVector<T,M,N>::operator==(const AbstractVector<T,M,N>& v) const
 	{
 		for (size_t i = 0; i < M; i++)
 			for (size_t j = 0; j < N; j++)
@@ -163,7 +161,7 @@ namespace mvl
 	}
 
 	template<typename T, size_t M, size_t N>
-	bool AbstractVector<T,M,N>::operator!=(const AbstractVector<T,M,N>& v)
+	bool AbstractVector<T,M,N>::operator!=(const AbstractVector<T,M,N>& v) const
 	{
 		return not ((*this) == v);
 	}
@@ -196,34 +194,34 @@ namespace mvl
 				action((*this)(i,j), v(i,j));
 	}
 
-	template<typename T, size_t M, size_t N, class V>
-	V operator+(V v, const AbstractVector<T,M,N>& u)
+	template<typename T, size_t M, size_t N>
+	AbstractVector<T,M,N> operator+(AbstractVector<T,M,N> v, const AbstractVector<T,M,N>& u)
 	{
-		return static_cast<V>(static_cast<AbstractVector<T,M,N>>(v) += u);
+		return v += u;
 	}
 
-	template<typename T, size_t M, size_t N, class V>
-	V operator-(V v, const AbstractVector<T,M,N>& u)
+	template<typename T, size_t M, size_t N>
+	AbstractVector<T,M,N> operator-(AbstractVector<T,M,N> v, const AbstractVector<T,M,N>& u)
 	{
-		return static_cast<V>(static_cast<AbstractVector<T,M,N>>(v) -= u);
+		return v -= u;
 	}
 
-	template<typename T, size_t M, size_t N, class V>
-	V operator*(V v, const T& t)
+	template<typename T, size_t M, size_t N>
+	AbstractVector<T,M,N> operator*(AbstractVector<T,M,N> v, const T& t)
 	{
-		return static_cast<V>(static_cast<AbstractVector<T,M,N>>(v) *= t);
+		return v *= t;
 	}
 
-	template<typename T, size_t M, size_t N, class V>
-	V operator*(const T& t, V v)
+	template<typename T, size_t M, size_t N>
+	AbstractVector<T,M,N> operator*(const T& t, AbstractVector<T,M,N> v)
 	{
-		return static_cast<V>(static_cast<AbstractVector<T,M,N>>(v) *= t);
+		return v *= t;
 	}
 
-	template<typename T, size_t M, size_t N, class V>
-	V operator/(V v, const T& t)
+	template<typename T, size_t M, size_t N>
+	AbstractVector<T,M,N> operator/(AbstractVector<T,M,N> v, const T& t)
 	{
-		return static_cast<V>(static_cast<AbstractVector<T,M,N>>(v) /= t);
+		return v /= t;
 	}
 
 	template<typename T, size_t M, size_t N, size_t S>
@@ -231,19 +229,9 @@ namespace mvl
 	{
 		AbstractVector<T,M,S> w;
 		for (size_t i = 0; i < M; i++)
-		{
 			for (size_t j = 0; j < S; j++)
-			{
 				for (size_t k = 0; k < N; k++)
-				{
-					std::cout << "(" << i << ", " << j << "), ("  << k << "): " << v(i,k) << " * " << u(k,j) << std::endl;
 					w(i,j) += v(i,k) * u(k,j);
-				}
-			}
-		}
-
-		std::cout << "w inside multiplication:" << std::endl;
-		w.print();
 		return w;
 	}
 

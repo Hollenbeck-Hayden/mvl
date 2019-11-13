@@ -59,8 +59,8 @@ namespace mvl
 		AbstractVector<T,M,N>& operator/=(const T& v);
 
 		// Comparison
-		bool operator==(const AbstractVector<T,M,N>& v);
-		bool operator!=(const AbstractVector<T,M,N>& v);
+		bool operator==(const AbstractVector<T,M,N>& v) const;
+		bool operator!=(const AbstractVector<T,M,N>& v) const;
 
 		// Display
 		virtual void print() const;
@@ -73,11 +73,11 @@ namespace mvl
 	};
 
 	// Arithmetic Operations
-	template<typename T, size_t M, size_t N, class V> V operator+(AbstractVector<T,M,N> v, const AbstractVector<T,M,N>& u);
-	template<typename T, size_t M, size_t N, class V> V operator-(AbstractVector<T,M,N> v, const AbstractVector<T,M,N>& u);
-	template<typename T, size_t M, size_t N, class V> V operator*(AbstractVector<T,M,N> v, const T& t);
-	template<typename T, size_t M, size_t N, class V> V operator/(AbstractVector<T,M,N> v, const T& t);
-	template<typename T, size_t M, size_t N, class V> V operator*(const T& t, AbstractVector<T,M,N> v);
+	template<typename T, size_t M, size_t N> AbstractVector<T,M,N> operator+(AbstractVector<T,M,N> v, const AbstractVector<T,M,N>& u);
+	template<typename T, size_t M, size_t N> AbstractVector<T,M,N> operator-(AbstractVector<T,M,N> v, const AbstractVector<T,M,N>& u);
+	template<typename T, size_t M, size_t N> AbstractVector<T,M,N> operator*(AbstractVector<T,M,N> v, const T& t);
+	template<typename T, size_t M, size_t N> AbstractVector<T,M,N> operator/(AbstractVector<T,M,N> v, const T& t);
+	template<typename T, size_t M, size_t N> AbstractVector<T,M,N> operator*(const T& t, AbstractVector<T,M,N> v);
 
 	template<typename T, size_t M, size_t N, size_t S> AbstractVector<T,M,S> operator*(const AbstractVector<T,M,N>& v, const AbstractVector<T,N,S>& u);
 

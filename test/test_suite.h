@@ -14,10 +14,7 @@ namespace testing
 	class TestError
 	{
 	public:
-		TestError(const std::string& msg)
-		{
-			message = msg;
-		}
+		TestError(const std::string& msg);
 
 		template<typename T>
 		TestError(const T& actual, const T& expected)
@@ -27,10 +24,7 @@ namespace testing
 			message = ss.str();
 		}
 
-		const std::string& getMessage()
-		{
-			return message;
-		}
+		const std::string& getMessage() const;
 	
 	private:
 		std::string message;
@@ -40,38 +34,8 @@ namespace testing
 	class Tester
 	{
 	public:
-		void addTest(const std::string& name, test_func f)
-		{
-			test_names.push_back(name);
-			test_functions.push_back(f);
-		}
-
-		void test()
-		{
-			size_t failures = 0;
-			std::cout << "Beginning testing..." << std::endl << std::endl;
-
-			for (size_t i = 0; i < test_names.size(); i++)
-			{
-				std::cout << "Testing " << test_names[i] << std::endl;
-				try
-				{
-					(test_functions[i])();
-				}
-				catch(TestError e)
-				{
-					failures++;
-					std::cout << "Failure" << std::endl;
-					std::cout << e.getMessage() << std::endl;
-				}
-
-				std::cout << std::endl;
-			}
-
-			std::cout << std::endl;
-			std::cout << "Testing completed!" << std::endl;
-			std::cout << "Total failures: " << failures << std::endl;
-		}
+		void addTest(const std::string& name, test_func f);
+		void test();
 
 	private:
 		std::vector<std::string> test_names;
@@ -84,4 +48,8 @@ namespace testing
 		if (a != b)
 			throw TestError(a, b);
 	}
+
+	void failUnimplemented();
+	void checkTrue(bool t);
+	void checkFalse(bool t);
 };
