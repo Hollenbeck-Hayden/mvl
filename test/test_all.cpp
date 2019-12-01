@@ -7,6 +7,7 @@ int main( void )
 
 	testDataMatrix(t);
 	testAbstractVector(t);
+	testMatrix(t);
 
 	t.test();
 

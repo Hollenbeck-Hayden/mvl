@@ -4,6 +4,12 @@
 
 namespace mvl
 {
+	/**
+	 * An array wrapper used to quickly move / cast vectors.
+	 * typename T		Data type
+	 * size_t   M		Number of rows
+	 * size_t   N		Number of columns
+	 */
 	template<typename T, size_t M, size_t N>
 	class DataMatrix
 	{
@@ -23,6 +29,15 @@ namespace mvl
 		T data[N][M];
 	};
 
+	/**
+	 * A class used to represent a MxN vector over a field T. 
+	 * While it is labeled "abstract", you may actually create objects
+	 * from this class if somehow the matrix or vector subclasses don't
+	 * fit your purpose.
+	 * typename T		data type
+	 * size_t   M		number of rows
+	 * size_t   N		number of columns
+	 */
 	template<typename T, size_t M, size_t N>
 	class AbstractVector
 	{
@@ -81,6 +96,9 @@ namespace mvl
 
 	template<typename T, size_t M, size_t N, size_t S> AbstractVector<T,M,S> operator*(const AbstractVector<T,M,N>& v, const AbstractVector<T,N,S>& u);
 
+	/**
+	 * A MxN matrix over a field T.
+	 */
 	template<typename T, size_t M, size_t N>
 	class Matrix : public AbstractVector<T,M,N>
 	{
@@ -95,6 +113,28 @@ namespace mvl
 		template<class V> Matrix(V&& v) : AbstractVector<T,M,N>(std::move(v)) {}
 	};
 
+	/**
+	 * A NxN linear operator over a field T.
+	 */
+	template<typename T, size_t N>
+	class Operator : public Matrix<T,N,N>
+	{
+	public:
+		// Inherited Constructors
+		using AbstractVector<T,N,N>::AbstractVector;
+		using AbstractVector<T,N,N>::operator=;
+		using Matrix<T,N,N>::Matrix;
+		using Matrix<T,N,N>::operator=;
+
+		// Copy / Move Constructors
+		Operator() : AbstractVector<T,N,N>() {}
+		template<class V> Operator(const V& v) : Matrix<T,N,N>(v) {}
+		template<class V> Operator(V&& v) : Matrix<T,N,N>(std::move(v)) {}
+	};
+
+	/**
+	 * An column vector of size N over a field T.
+	 */
 	template<typename T, size_t N>
 	class Vector : public AbstractVector<T,N,1>
 	{
@@ -116,6 +156,9 @@ namespace mvl
 		virtual void print() const;
 	};
 
+
+	// Factory methods
+	template<typename T, size_t N> Operator<T,N> identity_matrix();
 };
 
 #include "mvl.tpp"

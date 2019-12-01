@@ -4,3 +4,4 @@
 
 void testDataMatrix(testing::Tester& t);
 void testAbstractVector(testing::Tester& t);
+void testMatrix(testing::Tester& t);
