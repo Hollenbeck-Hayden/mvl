@@ -1,15 +1,9 @@
+#include <iostream>
 #include <cstddef>
-#include <functional>
 #include <memory>
 
 namespace mvl
 {
-	/**
-	 * An array wrapper used to quickly move / cast vectors.
-	 * typename T		Data type
-	 * size_t   M		Number of rows
-	 * size_t   N		Number of columns
-	 */
 	template<typename T, size_t M, size_t N>
 	class DataMatrix
 	{
@@ -17,148 +11,98 @@ namespace mvl
 		// Constructors
 		DataMatrix();
 
-		// Copy constructor
-		DataMatrix(const DataMatrix<T,M,N>& d);
-		DataMatrix<T,M,N>& operator=(const DataMatrix<T,M,N>& d);
+		// Copy Constructor
+		DataMatrix(const DataMatrix<T,M,N>& m);
+		DataMatrix<T,M,N>& operator=(const DataMatrix<T,M,N>& m);
+
+		// Access Operators
+		T& operator()(size_t i, size_t j);
+		const T& operator()(size_t i, size_t j) const;
+	
+	private:
+		T data[N][M];
+	};
+
+	template<typename T, size_t M, size_t N>
+	class Matrix
+	{
+	public:
+		// Constructors
+		Matrix();
+
+		// Copy Constructors
+		Matrix(const Matrix<T,M,N>& m);
+		Matrix<T,M,N>& operator=(const Matrix<T,M,N>& m);
+
+		// Move Constructors
+		Matrix(Matrix<T,M,N>&& m);
+		Matrix<T,M,N>& operator=(Matrix<T,M,N>&& m);
+
+		// Destructor
+		virtual ~Matrix();
 
 		// Element Access
 		T& operator()(size_t i, size_t j);
 		const T& operator()(size_t i, size_t j) const;
 
-	private:
-		T data[N][M];
-	};
-
-	/**
-	 * A class used to represent a MxN vector over a field T. 
-	 * While it is labeled "abstract", you may actually create objects
-	 * from this class if somehow the matrix or vector subclasses don't
-	 * fit your purpose.
-	 * typename T		data type
-	 * size_t   M		number of rows
-	 * size_t   N		number of columns
-	 */
-	template<typename T, size_t M, size_t N>
-	class AbstractVector
-	{
-	public:
-		// Constructors
-		AbstractVector();
-
-		// Copy semantics
-		AbstractVector(const AbstractVector<T,M,N>& v);
-		AbstractVector<T,M,N>& operator=(const AbstractVector<T,M,N>& v);
-
-		// Move semantics
-		AbstractVector(AbstractVector<T,M,N>&& v);
-		AbstractVector<T,M,N>& operator=(AbstractVector<T,M,N>&& v);
-
-		// Destructor
-		virtual ~AbstractVector();
-
-		// Element Access
-			T& operator()(size_t i, size_t j)	;
-		const	T& operator()(size_t i, size_t j) const	;
+		T& operator[](size_t i);
+		const T& operator[](size_t i) const;
 
 		// Column / Row Access
-		AbstractVector<T,1,N> getRow(size_t i) const;
-		AbstractVector<T,M,1> getCol(size_t i) const;
+		Matrix<T,1,N> getRow(size_t i) const;
+		Matrix<T,M,1> getCol(size_t i) const;
 
-		void setRow(size_t i, const AbstractVector<T,1,N>& row);
-		void setCol(size_t j, const AbstractVector<T,M,1>& col);
+		void setRow(size_t i, const Matrix<T,1,N>& row);
+		void setCol(size_t i, const Matrix<T,M,1>& col);
 
-		// Arithmetic Operators
-		AbstractVector<T,M,N>& operator+=(const AbstractVector<T,M,N>& v);
-		AbstractVector<T,M,N>& operator-=(const AbstractVector<T,M,N>& v);
-		AbstractVector<T,M,N>& operator*=(const T& v);
-		AbstractVector<T,M,N>& operator/=(const T& v);
+		// Arithmetic Operations
+		Matrix<T,M,N>& operator+=(const Matrix<T,M,N>& m);
+		Matrix<T,M,N>& operator-=(const Matrix<T,M,N>& m);
+		Matrix<T,M,N>& operator*=(const T& t);
+		Matrix<T,M,N>& operator/=(const T& t);
 
-		// Comparison
-		bool operator==(const AbstractVector<T,M,N>& v) const;
-		bool operator!=(const AbstractVector<T,M,N>& v) const;
+		// Comparison Operators
+		bool operator==(const Matrix<T,M,N>& m) const;
+		bool operator!=(const Matrix<T,M,N>& m) const;
 
-		// Display
-		virtual void print() const;
-
-	protected:
-		void component_wise(std::function<void(T&)> action);
-		void component_wise(const AbstractVector<T,M,N>& v, std::function<void(T&, const T&)> action);
-
+	private:
 		std::unique_ptr<DataMatrix<T,M,N>> mat;
+
+		template<typename F>
+		void component_wise(F f)
+		{
+			for (size_t i = 0; i < M; i++)
+				for (size_t j = 0; j < N; j++)
+					f(mat->operator()(i,j));
+		}
+
+		template<typename F>
+		void component_wise(const Matrix<T,M,N>& m, F f)
+		{
+			for (size_t i = 0; i < M; i++)
+				for (size_t j = 0; j < N; j++)
+					f(mat->operator()(i,j), m(i,j));
+		}
 	};
 
-	// Arithmetic Operations
-	template<typename T, size_t M, size_t N> AbstractVector<T,M,N> operator+(AbstractVector<T,M,N> v, const AbstractVector<T,M,N>& u);
-	template<typename T, size_t M, size_t N> AbstractVector<T,M,N> operator-(AbstractVector<T,M,N> v, const AbstractVector<T,M,N>& u);
-	template<typename T, size_t M, size_t N> AbstractVector<T,M,N> operator*(AbstractVector<T,M,N> v, const T& t);
-	template<typename T, size_t M, size_t N> AbstractVector<T,M,N> operator/(AbstractVector<T,M,N> v, const T& t);
-	template<typename T, size_t M, size_t N> AbstractVector<T,M,N> operator*(const T& t, AbstractVector<T,M,N> v);
+	template<typename T, size_t M, size_t N> Matrix<T,M,N> operator+(Matrix<T,M,N> m, const Matrix<T,M,N>& n);
+	template<typename T, size_t M, size_t N> Matrix<T,M,N> operator-(Matrix<T,M,N> m, const Matrix<T,M,N>& n);
+	template<typename T, size_t M, size_t N> Matrix<T,M,N> operator*(Matrix<T,M,N> m, const T& t);
+	template<typename T, size_t M, size_t N> Matrix<T,M,N> operator*(const T& t, Matrix<T,M,N> m);
+	template<typename T, size_t M, size_t N> Matrix<T,M,N> operator/(Matrix<T,M,N> m, const T& t);
 
-	template<typename T, size_t M, size_t N, size_t S> AbstractVector<T,M,S> operator*(const AbstractVector<T,M,N>& v, const AbstractVector<T,N,S>& u);
+	template<typename T, size_t M, size_t N, size_t S>
+	Matrix<T,M,S> operator*(const Matrix<T,M,N>& m, const Matrix<T,N,S>& n);
 
-	/**
-	 * A MxN matrix over a field T.
-	 */
 	template<typename T, size_t M, size_t N>
-	class Matrix : public AbstractVector<T,M,N>
-	{
-	public:
-		// Inherited Constructors
-		using AbstractVector<T,M,N>::AbstractVector;
-		using AbstractVector<T,M,N>::operator=;
+	Matrix<T,N,M> transpose(const Matrix<T,M,N>& m);
 
-		// Copy / Move Constructors
-		Matrix() : AbstractVector<T,M,N>() {}
-		template<class V> Matrix(const V& v) : AbstractVector<T,M,N>(v) {}
-		template<class V> Matrix(V&& v) : AbstractVector<T,M,N>(std::move(v)) {}
-	};
+	// Useful aliases
+	template<typename T, size_t N> using Vector = Matrix<T,N,1>;
+	template<typename T, size_t N> using SMatrix = Matrix<T,N,N>;
 
-	/**
-	 * A NxN linear operator over a field T.
-	 */
-	template<typename T, size_t N>
-	class Operator : public Matrix<T,N,N>
-	{
-	public:
-		// Inherited Constructors
-		using AbstractVector<T,N,N>::AbstractVector;
-		using AbstractVector<T,N,N>::operator=;
-		using Matrix<T,N,N>::Matrix;
-		using Matrix<T,N,N>::operator=;
-
-		// Copy / Move Constructors
-		Operator() : AbstractVector<T,N,N>() {}
-		template<class V> Operator(const V& v) : Matrix<T,N,N>(v) {}
-		template<class V> Operator(V&& v) : Matrix<T,N,N>(std::move(v)) {}
-	};
-
-	/**
-	 * An column vector of size N over a field T.
-	 */
-	template<typename T, size_t N>
-	class Vector : public AbstractVector<T,N,1>
-	{
-	public:
-		// Inherited Constructors
-		using AbstractVector<T,N,1>::AbstractVector;
-		using AbstractVector<T,N,1>::operator=;
-
-		// Copy / Move Constructors
-		Vector() : AbstractVector<T,N,1>() {}
-		template<class V> Vector(const V& v) : AbstractVector<T,N,1>(v) {}
-		template<class V> Vector(V&& v) : AbstractVector<T,N,1>(std::move(v)) {}
-
-		// Element Access
-			T& operator[](size_t i)		;
-		const	T& operator[](size_t i) const	;
-
-		// Display
-		virtual void print() const;
-	};
-
-
-	// Factory methods
-	template<typename T, size_t N> Operator<T,N> identity_matrix();
-};
+	// Vector Operations
+	template<typename T, size_t N> T dot(const Vector<T,N>& a, const Vector<T,N>& b);
+}
 
 #include "mvl.tpp"

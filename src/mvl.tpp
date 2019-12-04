@@ -2,27 +2,30 @@
 
 namespace mvl
 {
-	// Data Matrix
+	// Data Matrix Definition
 	template<typename T, size_t M, size_t N>
 	DataMatrix<T,M,N>::DataMatrix()
 	{
 		for (size_t i = 0; i < M; i++)
 			for (size_t j = 0; j < N; j++)
-				(*this)(i,j) = 0; } 
-	template<typename T, size_t M, size_t N>
-	DataMatrix<T,M,N>::DataMatrix(const DataMatrix<T,M,N>& d)
-	{
-		for (size_t i = 0; i < M; i++)
-			for (size_t j = 0; j < N; j++)
-				(*this)(i,j) = d(i,j);
+				(*this)(i,j) = 0;
 	}
 
 	template<typename T, size_t M, size_t N>
-	DataMatrix<T,M,N>& DataMatrix<T,M,N>::operator=(const DataMatrix<T,M,N>& d)
+	DataMatrix<T,M,N>::DataMatrix(const DataMatrix<T,M,N>& m)
 	{
 		for (size_t i = 0; i < M; i++)
 			for (size_t j = 0; j < N; j++)
-				(*this)(i,j) = d(i,j);
+				(*this)(i,j) = m(i,j);
+	}
+
+	template<typename T, size_t M, size_t N>
+	DataMatrix<T,M,N>& DataMatrix<T,M,N>::operator=(const DataMatrix<T,M,N>& m)
+	{
+		for (size_t i = 0; i < M; i++)
+			for (size_t j = 0; j < N; j++)
+				(*this)(i,j) = m(i,j);
+		return *this;
 	}
 
 	template<typename T, size_t M, size_t N>
@@ -37,223 +40,206 @@ namespace mvl
 		return data[j][i];
 	}
 
-
-	// Abstract Vector
+	// Matrix
 	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,N>::AbstractVector()
+	Matrix<T,M,N>::Matrix()
 	{
 		mat = std::make_unique<DataMatrix<T,M,N>>();
 	}
 
 	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,N>::AbstractVector(const AbstractVector<T,M,N>& v)
+	Matrix<T,M,N>::Matrix(const Matrix<T,M,N>& m)
 	{
 		mat = std::make_unique<DataMatrix<T,M,N>>();
-		component_wise(v, [] (T& x, const T& y) { x = y; });
+		component_wise(m, [](T& a, const T& b) { a = b; });
 	}
 
 	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,N>& AbstractVector<T,M,N>::operator=(const AbstractVector<T,M,N>& v)
+	Matrix<T,M,N>& Matrix<T,M,N>::operator=(const Matrix<T,M,N>& m)
 	{
 		mat = std::make_unique<DataMatrix<T,M,N>>();
-		component_wise(v, [] (T& x, const T& y) { x = y; });
+		component_wise(m, [](T& a, const T& b) { a = b; });
 		return *this;
 	}
 
 	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,N>::AbstractVector(AbstractVector<T,M,N>&& v)
-		: mat(std::move(v.mat))
+	Matrix<T,M,N>::Matrix(Matrix<T,M,N>&& m)
 	{
+		mat = std::move(m.mat);
 	}
 
 	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,N>& AbstractVector<T,M,N>::operator=(AbstractVector<T,M,N>&& v)
+	Matrix<T,M,N>& Matrix<T,M,N>::operator=(Matrix<T,M,N>&& m)
 	{
-		mat = std::move(v.mat);
+		mat = std::move(m.mat);
 		return *this;
 	}
 
 	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,N>::~AbstractVector()
+	Matrix<T,M,N>::~Matrix<T,M,N>()
 	{
+		mat.release();
 	}
 
-	template<typename T, size_t M, size_t N>	
-	T& AbstractVector<T,M,N>::operator()(size_t i, size_t j)
+	template<typename T, size_t M, size_t N>
+	T& Matrix<T,M,N>::operator()(size_t i, size_t j)
 	{
 		return mat->operator()(i,j);
 	}
 
 	template<typename T, size_t M, size_t N>
-	const T& AbstractVector<T,M,N>::operator()(size_t i, size_t j) const
-	{
+	const T& Matrix<T,M,N>::operator()(size_t i, size_t j) const
+	{	
 		return mat->operator()(i,j);
 	}
 
 	template<typename T, size_t M, size_t N>
-	AbstractVector<T,1,N> AbstractVector<T,M,N>::getRow(size_t i) const
+	T& Matrix<T,M,N>::operator[](size_t i)
 	{
-		AbstractVector<T,1,N> v;
+		return (*this)(i,0);
+	}
+
+	template<typename T, size_t M, size_t N>
+	const T& Matrix<T,M,N>::operator[](size_t i) const
+	{
+		return (*this)(i,0);
+	}
+
+	template<typename T, size_t M, size_t N>
+	Matrix<T,1,N> Matrix<T,M,N>::getRow(size_t i) const
+	{
+		Matrix<T,1,N> row;
 		for (size_t j = 0; j < N; j++)
-			v(0,j) = (*this)(i,j);
-		return v;
+			row(0,j) = (*this)(i,j);
+		return row;
 	}
 
 	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,1> AbstractVector<T,M,N>::getCol(size_t i) const
+	Matrix<T,M,1> Matrix<T,M,N>::getCol(size_t j) const
 	{
-		AbstractVector<T,M,1> v;
-		for (size_t j = 0; j < M; j++)
-			v(j,0) = (*this)(j,i);
-		return v;
+		Matrix<T,M,1> col;
+		for (size_t i = 0; i < M; i++)
+			col(i,0) = (*this)(i,j);
+		return col;
 	}
 
 	template<typename T, size_t M, size_t N>
-	void AbstractVector<T,M,N>::setRow(size_t i, const AbstractVector<T,1,N>& row)
+	void Matrix<T,M,N>::setRow(size_t i, const Matrix<T,1,N>& row)
 	{
 		for (size_t j = 0; j < N; j++)
 			(*this)(i,j) = row(0,j);
 	}
 
 	template<typename T, size_t M, size_t N>
-	void AbstractVector<T,M,N>::setCol(size_t i, const AbstractVector<T,M,1>& col)
+	void Matrix<T,M,N>::setCol(size_t j, const Matrix<T,M,1>& col)
 	{
-		for (size_t j = 0; j < M; j++)
-			(*this)(j,i) = col(j,0);
+		for (size_t i = 0; i < M; i++)
+			(*this)(i,j) = col(i,0);
 	}
 
 	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,N>& AbstractVector<T,M,N>::operator+=(const AbstractVector<T,M,N>& v)
+	Matrix<T,M,N>& Matrix<T,M,N>::operator+=(const Matrix<T,M,N>& m)
 	{
-		component_wise(v, [] (T& x, const T& y) { x += y; });
+		component_wise(m, [](T& a, const T& b) { a += b; });
 		return *this;
 	}
 
 	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,N>& AbstractVector<T,M,N>::operator-=(const AbstractVector<T,M,N>& v)
+	Matrix<T,M,N>& Matrix<T,M,N>::operator-=(const Matrix<T,M,N>& m)
 	{
-		component_wise(v, [] (T& x, const T& y) { x -= y; });
+		component_wise(m, [](T& a, const T& b) { a -= b; });
 		return *this;
 	}
 
 	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,N>& AbstractVector<T,M,N>::operator*=(const T& t)
+	Matrix<T,M,N>& Matrix<T,M,N>::operator*=(const T& t)
 	{
-		component_wise([t] (T& x) { x *= t; });
+		component_wise([t] (T& a) { a *= t; });
 		return *this;
 	}
 
 	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,N>& AbstractVector<T,M,N>::operator/=(const T& t)
+	Matrix<T,M,N>& Matrix<T,M,N>::operator/=(const T& t)
 	{
-		component_wise([t] (T& x) { x /= t; });
+		component_wise([t] (T& a) { a /= t; });
 		return *this;
 	}
 
 	template<typename T, size_t M, size_t N>
-	bool AbstractVector<T,M,N>::operator==(const AbstractVector<T,M,N>& v) const
+	bool Matrix<T,M,N>::operator==(const Matrix<T,M,N>& m) const
 	{
 		for (size_t i = 0; i < M; i++)
 			for (size_t j = 0; j < N; j++)
-				if ((*this)(i,j) != v(i,j))
+				if ((*this)(i,j) != m(i,j))
 					return false;
 		return true;
 	}
 
 	template<typename T, size_t M, size_t N>
-	bool AbstractVector<T,M,N>::operator!=(const AbstractVector<T,M,N>& v) const
+	bool Matrix<T,M,N>::operator!=(const Matrix<T,M,N>& m) const
 	{
-		return not ((*this) == v);
+		return *this != m;
+	}
+
+	// External Arithmetic Functions
+	template<typename T, size_t M, size_t N>
+	Matrix<T,M,N> operator+(Matrix<T,M,N> m, const Matrix<T,M,N>& n)
+	{
+		return m += n;
 	}
 
 	template<typename T, size_t M, size_t N>
-	void AbstractVector<T,M,N>::print() const
+	Matrix<T,M,N> operator-(Matrix<T,M,N> m, const Matrix<T,M,N>& n)
 	{
-		for (size_t i = 0; i < M; i++)
-		{
-			std::cout << "[ " << (*this)(i,0);
-			for (size_t j = 1; j < N; j++)
-				std::cout << ", " << (*this)(i,j);
-			std::cout << "]" << std::endl;
-		}
+		return m -= n;
 	}
 
 	template<typename T, size_t M, size_t N>
-	void AbstractVector<T,M,N>::component_wise(std::function<void(T&)> action)
+	Matrix<T,M,N> operator*(Matrix<T,M,N> m, const T& t)
 	{
-		for (size_t i = 0; i < M; i++)
-			for (size_t j = 0; j < N; j++)
-				action((*this)(i,j));
+		return m *= t;
 	}
 
 	template<typename T, size_t M, size_t N>
-	void AbstractVector<T,M,N>::component_wise(const AbstractVector<T,M,N>& v, std::function<void(T&, const T&)> action)
+	Matrix<T,M,N> operator*(const T& t, Matrix<T,M,N> m) 
 	{
-		for (size_t i = 0; i < M; i++)
-			for (size_t j = 0; j < N; j++)
-				action((*this)(i,j), v(i,j));
+		return m *= t;
 	}
 
 	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,N> operator+(AbstractVector<T,M,N> v, const AbstractVector<T,M,N>& u)
+	Matrix<T,M,N> operator/(Matrix<T,M,N> m, const T& t)
 	{
-		return v += u;
-	}
-
-	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,N> operator-(AbstractVector<T,M,N> v, const AbstractVector<T,M,N>& u)
-	{
-		return v -= u;
-	}
-
-	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,N> operator*(AbstractVector<T,M,N> v, const T& t)
-	{
-		return v *= t;
-	}
-
-	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,N> operator*(const T& t, AbstractVector<T,M,N> v)
-	{
-		return v *= t;
-	}
-
-	template<typename T, size_t M, size_t N>
-	AbstractVector<T,M,N> operator/(AbstractVector<T,M,N> v, const T& t)
-	{
-		return v /= t;
+		return m /= t;
 	}
 
 	template<typename T, size_t M, size_t N, size_t S>
-	AbstractVector<T,M,S> operator*(const AbstractVector<T,M,N>& v, const AbstractVector<T,N,S>& u)
+	Matrix<T,M,S> operator*(const Matrix<T,M,N>& m, const Matrix<T,N,S>& n)
 	{
-		AbstractVector<T,M,S> w;
+		Matrix<T,M,S> s;
 		for (size_t i = 0; i < M; i++)
 			for (size_t j = 0; j < S; j++)
 				for (size_t k = 0; k < N; k++)
-					w(i,j) += v(i,k) * u(k,j);
-		return w;
+					s(i,j) += m(i,k) * n(k,j);
+		return s;
 	}
 
-	// Vector
-	template<typename T, size_t N>
-	T& Vector<T,N>::operator[](size_t i)
+	template<typename T, size_t M, size_t N>
+	Matrix<T,N,M> transpose(const Matrix<T,M,N>& m)
 	{
-		return (*this)(i,0);
+		Matrix<T,N,M> n;
+		for (size_t i = 0; i < M; i++)
+			for (size_t j = 0; j < N; j++)
+				n(j,i) = m(i,j);
+		return n;
 	}
 
+	// Vector Operations
 	template<typename T, size_t N>
-	const T& Vector<T,N>::operator[](size_t i) const
+	T dot(const Vector<T,N>& a, const Vector<T,N>& b)
 	{
-		return (*this)(i,0);
+		T t = 0;
+		for (size_t i = 0; i < N; i++)
+			t += a[i] * b[i];
+		return t;
 	}
-
-	template<typename T, size_t N>
-	void Vector<T,N>::print() const
-	{
-		std::cout << "[ " << (*this)[0];
-		for (size_t i = 1; i < N; i++)
-			std::cout << ", " << (*this)[i];
-		std::cout << "]" << std::endl;
-	}
-};
+}

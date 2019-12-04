@@ -6,8 +6,6 @@ int main( void )
 	testing::Tester t;
 
 	testDataMatrix(t);
-	testAbstractVector(t);
-	testMatrix(t);
 
 	t.test();
 

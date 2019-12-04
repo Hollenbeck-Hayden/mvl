@@ -21,6 +21,10 @@ namespace test_data_matrix
 				testing::checkEquals(m(i,j), n(i,j));
 	}
 
+	void intro()
+	{
+	}
+
 	void testConstructor()
 	{
 		mvl::DataMatrix<int, 3, 3> a;
@@ -105,6 +109,7 @@ namespace test_data_matrix
 
 void testDataMatrix(testing::Tester& t)
 {
+	t.addTest("Data Matrix", test_data_matrix::intro);
 	t.addTest("Empty constructor",		test_data_matrix::testConstructor);
 	t.addTest("Copy constructor",		test_data_matrix::testConstructorCopy);
 	t.addTest("Copy assignment",		test_data_matrix::testAssignmentCopy);
