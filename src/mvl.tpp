@@ -40,6 +40,41 @@ namespace mvl
 		return data[j][i];
 	}
 
+	// Data Matrix Nx1
+	template<typename T, size_t N>
+	DataMatrix<T,N,1>::DataMatrix()
+	{
+		for (size_t i = 0; i < N; i++)
+			(*this)(i,0) = 0;
+	}
+
+	template<typename T, size_t N>
+	DataMatrix<T,N,1>::DataMatrix(const DataMatrix<T,N,1>& m)
+	{
+		for (size_t i = 0; i < N; i++)
+			(*this)(i,0) = m(i,0);
+	}
+
+	template<typename T, size_t N>
+	DataMatrix<T,N,1>& DataMatrix<T,N,1>::operator=(const DataMatrix<T,N,1>& m)
+	{
+		for (size_t i = 0; i < N; i++)
+			(*this)(i,0) = m(i,0);
+		return *this;
+	}
+
+	template<typename T, size_t N>
+	T& DataMatrix<T,N,1>::operator()(size_t i, size_t j)
+	{
+		return data[i];
+	}
+
+	template<typename T, size_t N>
+	const T& DataMatrix<T,N,1>::operator()(size_t i, size_t j) const
+	{
+		return data[i];
+	}
+
 	// Matrix
 	template<typename T, size_t M, size_t N>
 	Matrix<T,M,N>::Matrix()
@@ -178,7 +213,7 @@ namespace mvl
 	template<typename T, size_t M, size_t N>
 	bool Matrix<T,M,N>::operator!=(const Matrix<T,M,N>& m) const
 	{
-		return *this != m;
+		return !((*this) == m);
 	}
 
 	// External Arithmetic Functions

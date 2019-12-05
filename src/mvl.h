@@ -23,6 +23,22 @@ namespace mvl
 		T data[N][M];
 	};
 
+	template<typename T, size_t N>
+	class DataMatrix<T, N, 1>
+	{
+	public:
+		DataMatrix();
+
+		DataMatrix(const DataMatrix<T,N,1>& m);
+		DataMatrix<T,N,1>& operator=(const DataMatrix<T,N,1>& m);
+
+		T& operator()(size_t i, size_t j);
+		const T& operator()(size_t i, size_t j) const;
+	
+	private:
+		T data[N];
+	};
+
 	template<typename T, size_t M, size_t N>
 	class Matrix
 	{

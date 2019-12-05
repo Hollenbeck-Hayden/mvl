@@ -107,12 +107,105 @@ namespace test_data_matrix
 	}
 };
 
+namespace test_data_vector
+{
+	template<typename T, size_t N>
+	void testMatch(const mvl::DataMatrix<T,N,1>& m, T t[N])
+	{
+		for (size_t i = 0; i < N; i++)
+			testing::checkEquals(m(i,0), t[i]);
+	}
+
+	template<typename T, size_t N>
+	void testMatch(const mvl::DataMatrix<T,N,1>& m, const mvl::DataMatrix<T,N,1>& n)
+	{
+		for (size_t i = 0; i < N; i++)
+			testing::checkEquals(m(i,0), n(i,0));
+	}
+
+	void intro()
+	{
+	}
+
+	void testConstructor()
+	{
+		mvl::DataMatrix<int, 3, 1> a;
+		int a_arr[3] = {0,0,0};
+		testMatch(a, a_arr);
+	}
+
+	void testConstructorCopy()
+	{
+		mvl::DataMatrix<int, 3, 1> a;
+		a(0,0) = 1;
+		a(1,0) = 2;
+		a(2,0) = -3;
+		mvl::DataMatrix<int, 3, 1> b(a);
+		testMatch(a, b);
+		b(1,0) = 5;
+		testing::checkEquals(b(1,0), 5);
+		testing::checkEquals(a(1,0), 2);
+
+		mvl::DataMatrix<int,3,1> c(a);
+		testMatch(a, c);
+		c(1,0) = 7;
+		testing::checkEquals(c(1,0), 7);
+		testing::checkEquals(a(1,0), 2);
+	}
+
+	void testAssignmentCopy()
+	{
+		mvl::DataMatrix<int, 3, 1> a;
+		a(0,0) = 3;
+		a(1,0) = 1;
+		a(2,0) = 5;
+		mvl::DataMatrix<int, 3, 1> b = a;
+		testMatch(a, b);
+		b(1,0) = 5;
+		testing::checkEquals(b(1,0), 5);
+		testing::checkEquals(a(1,0), 1);
+
+		mvl::DataMatrix<int,3,1> c = a;
+		testMatch(a, c);
+		c(1,0) = 7;
+		testing::checkEquals(c(1,0), 7);
+		testing::checkEquals(a(1,0), 1);
+	}
+
+	void testOperatorAccess()
+	{
+		mvl::DataMatrix<int,5,1> a;
+		for (size_t i = 0; i < 5; i++)
+			a(i, 0) = i;
+		for (size_t i = 0; i < 5; i++)
+			testing::checkEquals(a(i, 0), (int) i);
+	}
+
+	void testOperatorAccessConst()
+	{
+		mvl::DataMatrix<int,5,1> a;
+		for (size_t i = 0; i < 5; i++)
+			a(i, 0) = i;
+
+		const mvl::DataMatrix<int,5,1> b = a;
+		for (size_t i = 0; i < 5; i++)
+			testing::checkEquals(b(i, 0), (int) i);
+	}
+};
+
 void testDataMatrix(testing::Tester& t)
 {
-	t.addTest("Data Matrix", test_data_matrix::intro);
+	t.addTest("Data Matrix", 		test_data_matrix::intro);
 	t.addTest("Empty constructor",		test_data_matrix::testConstructor);
 	t.addTest("Copy constructor",		test_data_matrix::testConstructorCopy);
 	t.addTest("Copy assignment",		test_data_matrix::testAssignmentCopy);
 	t.addTest("Access operator",		test_data_matrix::testOperatorAccess);
 	t.addTest("Constant access operator",	test_data_matrix::testOperatorAccessConst);
+
+	t.addTest("Data Vector", 		test_data_vector::intro);
+	t.addTest("Empty constructor",		test_data_vector::testConstructor);
+	t.addTest("Copy constructor",		test_data_vector::testConstructorCopy);
+	t.addTest("Copy assignment",		test_data_vector::testAssignmentCopy);
+	t.addTest("Access operator",		test_data_vector::testOperatorAccess);
+	t.addTest("Constant access operator",	test_data_vector::testOperatorAccessConst);
 }
