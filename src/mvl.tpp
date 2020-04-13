@@ -1,131 +1,25 @@
-#include <iostream>
+#include <cmath>
 
 namespace mvl
 {
-	// Data Matrix Definition
-	template<typename T, size_t M, size_t N>
-	DataMatrix<T,M,N>::DataMatrix()
-	{
-		for (size_t i = 0; i < M; i++)
-			for (size_t j = 0; j < N; j++)
-				(*this)(i,j) = 0;
-	}
-
-	template<typename T, size_t M, size_t N>
-	DataMatrix<T,M,N>::DataMatrix(const DataMatrix<T,M,N>& m)
-	{
-		for (size_t i = 0; i < M; i++)
-			for (size_t j = 0; j < N; j++)
-				(*this)(i,j) = m(i,j);
-	}
-
-	template<typename T, size_t M, size_t N>
-	DataMatrix<T,M,N>& DataMatrix<T,M,N>::operator=(const DataMatrix<T,M,N>& m)
-	{
-		for (size_t i = 0; i < M; i++)
-			for (size_t j = 0; j < N; j++)
-				(*this)(i,j) = m(i,j);
-		return *this;
-	}
-
-	template<typename T, size_t M, size_t N>
-	T& DataMatrix<T,M,N>::operator()(size_t i, size_t j)
-	{
-		return data[j][i];
-	}
-
-	template<typename T, size_t M, size_t N>
-	const T& DataMatrix<T,M,N>::operator()(size_t i, size_t j) const
-	{
-		return data[j][i];
-	}
-
-	// Data Matrix Nx1
-	template<typename T, size_t N>
-	DataMatrix<T,N,1>::DataMatrix()
-	{
-		for (size_t i = 0; i < N; i++)
-			(*this)(i,0) = 0;
-	}
-
-	template<typename T, size_t N>
-	DataMatrix<T,N,1>::DataMatrix(const DataMatrix<T,N,1>& m)
-	{
-		for (size_t i = 0; i < N; i++)
-			(*this)(i,0) = m(i,0);
-	}
-
-	template<typename T, size_t N>
-	DataMatrix<T,N,1>& DataMatrix<T,N,1>::operator=(const DataMatrix<T,N,1>& m)
-	{
-		for (size_t i = 0; i < N; i++)
-			(*this)(i,0) = m(i,0);
-		return *this;
-	}
-
-	template<typename T, size_t N>
-	T& DataMatrix<T,N,1>::operator()(size_t i, size_t j)
-	{
-		return data[i];
-	}
-
-	template<typename T, size_t N>
-	const T& DataMatrix<T,N,1>::operator()(size_t i, size_t j) const
-	{
-		return data[i];
-	}
-
 	// Matrix
 	template<typename T, size_t M, size_t N>
 	Matrix<T,M,N>::Matrix()
 	{
-		mat = std::make_unique<DataMatrix<T,M,N>>();
+		mat.fill(0);
 	}
 
-	template<typename T, size_t M, size_t N>
-	Matrix<T,M,N>::Matrix(const Matrix<T,M,N>& m)
-	{
-		mat = std::make_unique<DataMatrix<T,M,N>>();
-		component_wise(m, [](T& a, const T& b) { a = b; });
-	}
-
-	template<typename T, size_t M, size_t N>
-	Matrix<T,M,N>& Matrix<T,M,N>::operator=(const Matrix<T,M,N>& m)
-	{
-		mat = std::make_unique<DataMatrix<T,M,N>>();
-		component_wise(m, [](T& a, const T& b) { a = b; });
-		return *this;
-	}
-
-	template<typename T, size_t M, size_t N>
-	Matrix<T,M,N>::Matrix(Matrix<T,M,N>&& m)
-	{
-		mat = std::move(m.mat);
-	}
-
-	template<typename T, size_t M, size_t N>
-	Matrix<T,M,N>& Matrix<T,M,N>::operator=(Matrix<T,M,N>&& m)
-	{
-		mat = std::move(m.mat);
-		return *this;
-	}
-
-	template<typename T, size_t M, size_t N>
-	Matrix<T,M,N>::~Matrix<T,M,N>()
-	{
-		mat.release();
-	}
-
+	// Access Operators
 	template<typename T, size_t M, size_t N>
 	T& Matrix<T,M,N>::operator()(size_t i, size_t j)
 	{
-		return mat->operator()(i,j);
+		return mat[matrix_array_index<M,N>(i,j)];
 	}
 
 	template<typename T, size_t M, size_t N>
 	const T& Matrix<T,M,N>::operator()(size_t i, size_t j) const
 	{	
-		return mat->operator()(i,j);
+		return mat[matrix_array_index<M,N>(i,j)];
 	}
 
 	template<typename T, size_t M, size_t N>
@@ -172,6 +66,7 @@ namespace mvl
 			(*this)(i,j) = col(i,0);
 	}
 
+	// Arithmetic Operators
 	template<typename T, size_t M, size_t N>
 	Matrix<T,M,N>& Matrix<T,M,N>::operator+=(const Matrix<T,M,N>& m)
 	{
@@ -200,6 +95,17 @@ namespace mvl
 		return *this;
 	}
 
+	template<typename T, size_t M, size_t N>
+	Matrix<T,M,N> Matrix<T,M,N>::operator-() const
+	{
+		Matrix<T,M,N> m;
+		for (size_t i = 0; i < M; i++)
+			for (size_t j = 0; j < N; j++)
+				m(i,j) = -(*this)(i,j);
+		return m;
+	}
+
+	// Comparison Operators
 	template<typename T, size_t M, size_t N>
 	bool Matrix<T,M,N>::operator==(const Matrix<T,M,N>& m) const
 	{
@@ -255,9 +161,11 @@ namespace mvl
 			for (size_t j = 0; j < S; j++)
 				for (size_t k = 0; k < N; k++)
 					s(i,j) += m(i,k) * n(k,j);
+
 		return s;
 	}
 
+	// Dual Space Operations
 	template<typename T, size_t M, size_t N>
 	Matrix<T,N,M> transpose(const Matrix<T,M,N>& m)
 	{
@@ -272,9 +180,64 @@ namespace mvl
 	template<typename T, size_t N>
 	T dot(const Vector<T,N>& a, const Vector<T,N>& b)
 	{
+		return inner_product(a, b);
+	}
+
+	template<typename T>
+	Vector<T,3> cross(const Vector<T,3>& a, const Vector<T,3>& b)
+	{
+		Vector<T,3> c;
+		c[0] = (a[1] * b[2]) - (a[2] * b[1]);
+		c[1] = (a[2] * b[0]) - (a[0] * b[2]);
+		c[2] = (a[0] * b[1]) - (a[1] * b[0]);
+		return c;
+	}
+
+	// Inner Product Operations
+	template<typename T, size_t N>
+	T inner_product(const Vector<T,N>& a, const Vector<T,N>& b)
+	{
 		T t = 0;
 		for (size_t i = 0; i < N; i++)
 			t += a[i] * b[i];
 		return t;
+	}
+
+	template<typename T, size_t N>
+	T norm(const Vector<T,N>& v)
+	{
+		return sqrt(norm2(v));
+	}
+
+	template<typename T, size_t N>
+	T norm2(const Vector<T,N>& v)
+	{
+		return inner_product(v,v);
+	}
+
+	template<typename T, size_t N>
+	Vector<T,N> normalize(const Vector<T,N>& v)
+	{
+		Vector<T,N> u = v;
+		return u / norm(u);
+	}
+
+	template<typename T, size_t N>
+	Vector<T,N>& normalize(Vector<T,N>& v)
+	{
+		return v /= norm(v);
+	}
+
+	template<typename T, size_t N>
+	bool is_orthogonal(const Vector<T,N>& a, const Vector<T,N>& b)
+	{
+		return inner_product(a,b) == 0;
+	}
+
+	// OpenGL Methods
+	template<typename T, size_t M, size_t N>
+	const T* Matrix<T,M,N>::toArray() const
+	{
+		return mat.data();
 	}
 }

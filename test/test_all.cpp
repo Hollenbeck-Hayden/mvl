@@ -5,8 +5,8 @@ int main( void )
 {
 	testing::Tester t;
 
-	testDataMatrix(t);
 	testMatrix(t);
+	testVector(t);
 
 	t.test();
 

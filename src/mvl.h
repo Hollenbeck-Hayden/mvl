@@ -1,43 +1,20 @@
+#pragma once
+
 #include <iostream>
 #include <cstddef>
-#include <memory>
+#include <array>
+#include <initializer_list>
 
 namespace mvl
 {
-	template<typename T, size_t M, size_t N>
-	class DataMatrix
+	template<size_t M, size_t N>
+	inline size_t matrix_array_index(size_t i, size_t j)
 	{
-	public:
-		// Constructors
-		DataMatrix();
+		if (i >= M or j >= N)
+			std::cout << "Out of bounds: (" << i << ", " << j << ") in " << M << " x " << N << std::endl;
 
-		// Copy Constructor
-		DataMatrix(const DataMatrix<T,M,N>& m);
-		DataMatrix<T,M,N>& operator=(const DataMatrix<T,M,N>& m);
-
-		// Access Operators
-		T& operator()(size_t i, size_t j);
-		const T& operator()(size_t i, size_t j) const;
-	
-	private:
-		T data[N][M];
-	};
-
-	template<typename T, size_t N>
-	class DataMatrix<T, N, 1>
-	{
-	public:
-		DataMatrix();
-
-		DataMatrix(const DataMatrix<T,N,1>& m);
-		DataMatrix<T,N,1>& operator=(const DataMatrix<T,N,1>& m);
-
-		T& operator()(size_t i, size_t j);
-		const T& operator()(size_t i, size_t j) const;
-	
-	private:
-		T data[N];
-	};
+		return i + M * j;
+	}
 
 	template<typename T, size_t M, size_t N>
 	class Matrix
@@ -46,16 +23,8 @@ namespace mvl
 		// Constructors
 		Matrix();
 
-		// Copy Constructors
-		Matrix(const Matrix<T,M,N>& m);
-		Matrix<T,M,N>& operator=(const Matrix<T,M,N>& m);
-
-		// Move Constructors
-		Matrix(Matrix<T,M,N>&& m);
-		Matrix<T,M,N>& operator=(Matrix<T,M,N>&& m);
-
-		// Destructor
-		virtual ~Matrix();
+		template<typename... S>
+		Matrix(S... data) : mat{data...} {};
 
 		// Element Access
 		T& operator()(size_t i, size_t j);
@@ -76,20 +45,25 @@ namespace mvl
 		Matrix<T,M,N>& operator-=(const Matrix<T,M,N>& m);
 		Matrix<T,M,N>& operator*=(const T& t);
 		Matrix<T,M,N>& operator/=(const T& t);
+		
+		Matrix<T,M,N> operator-() const;
 
 		// Comparison Operators
 		bool operator==(const Matrix<T,M,N>& m) const;
 		bool operator!=(const Matrix<T,M,N>& m) const;
 
+		// OpenGL methods
+		const T* toArray() const;
+
 	private:
-		std::unique_ptr<DataMatrix<T,M,N>> mat;
+		std::array<T, M*N> mat;
 
 		template<typename F>
 		void component_wise(F f)
 		{
 			for (size_t i = 0; i < M; i++)
 				for (size_t j = 0; j < N; j++)
-					f(mat->operator()(i,j));
+					f(mat[matrix_array_index<M,N>(i,j)]);
 		}
 
 		template<typename F>
@@ -97,10 +71,11 @@ namespace mvl
 		{
 			for (size_t i = 0; i < M; i++)
 				for (size_t j = 0; j < N; j++)
-					f(mat->operator()(i,j), m(i,j));
+					f(mat[matrix_array_index<M,N>(i,j)], m(i,j));
 		}
 	};
 
+	// Arithmetic operations
 	template<typename T, size_t M, size_t N> Matrix<T,M,N> operator+(Matrix<T,M,N> m, const Matrix<T,M,N>& n);
 	template<typename T, size_t M, size_t N> Matrix<T,M,N> operator-(Matrix<T,M,N> m, const Matrix<T,M,N>& n);
 	template<typename T, size_t M, size_t N> Matrix<T,M,N> operator*(Matrix<T,M,N> m, const T& t);
@@ -110,15 +85,25 @@ namespace mvl
 	template<typename T, size_t M, size_t N, size_t S>
 	Matrix<T,M,S> operator*(const Matrix<T,M,N>& m, const Matrix<T,N,S>& n);
 
-	template<typename T, size_t M, size_t N>
-	Matrix<T,N,M> transpose(const Matrix<T,M,N>& m);
-
 	// Useful aliases
 	template<typename T, size_t N> using Vector = Matrix<T,N,1>;
 	template<typename T, size_t N> using SMatrix = Matrix<T,N,N>;
 
 	// Vector Operations
 	template<typename T, size_t N> T dot(const Vector<T,N>& a, const Vector<T,N>& b);
+	template<typename T, size_t N> Vector<T,N> cross(const Vector<T,N>& a, const Vector<T,N>& b);
+
+	// Inner Product Operations
+	template<typename T, size_t N> T inner_product(const Vector<T,N>& a, const Vector<T,N>& b);
+	template<typename T, size_t N> T norm(const Vector<T,N>& v);
+	template<typename T, size_t N> T norm2(const Vector<T,N>& v);
+	template<typename T, size_t N> Vector<T,N> normalize(const Vector<T,N>& v);
+	template<typename T, size_t N> Vector<T,N>& normalize(Vector<T,N>& v);
+	template<typename T, size_t N> bool is_orthogonal(const Vector<T,N>& a, const Vector<T,N>& b);
+	
+	// Dual Space Operations
+	template<typename T, size_t M, size_t N>
+	Matrix<T,N,M> transpose(const Matrix<T,M,N>& m);
 }
 
 #include "mvl.tpp"
