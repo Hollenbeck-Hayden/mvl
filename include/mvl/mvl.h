@@ -72,7 +72,7 @@ namespace mvl
 
 		void setCol(size_t j, const Matrix<T,M,1>& col)
 		{
-			for (size_t i = 0; i < N; i++)
+			for (size_t i = 0; i < M; i++)
 				(*this)(i,j) = col(i,0);
 		}
 

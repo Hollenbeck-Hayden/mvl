@@ -1,4 +1,4 @@
-#include "../src/mvl.h"
+#include "mvl/mvl.h"
 #include "test_suite.h"
 #include "tests.h"
 #include <iostream>
