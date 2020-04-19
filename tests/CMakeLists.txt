@@ -1,13 +1,25 @@
 cmake_minimum_required(VERSION 3.5)
 
-set(sources
-	test_suite.cpp
-	test_all.cpp
-	test_Matrix.cpp
-	test_Vector.cpp
+
+# Unit test matrix
+add_executable(mvl-test-matrix)
+target_link_libraries(mvl-test-matrix PRIVATE mvl)
+target_sources(mvl-test-matrix
+	PRIVATE
+		test_Matrix.cpp
+		test_suite.cpp
 )
 
-add_executable(mvl-test ${sources})
-target_link_libraries(mvl-test PUBLIC mvl)
+# Unit test vector
+add_executable(mvl-test-vector)
+target_link_libraries(mvl-test-vector PRIVATE mvl)
+target_sources(mvl-test-vector
+	PRIVATE
+		test_Vector.cpp
+		test_suite.cpp
+)
 
-add_test(NAME TestAll COMMAND mvl-test)
+
+# Add unit tests
+add_test(NAME MVLTestMatrix COMMAND mvl-test-matrix)
+add_test(NAME MVLTestVector COMMAND mvl-test-vector)

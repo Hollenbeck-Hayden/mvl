@@ -1,7 +1,5 @@
 #include "mvl/mvl.h"
 #include "test_suite.h"
-#include "tests.h"
-#include <iostream>
 
 namespace test_matrix
 {
@@ -349,8 +347,9 @@ namespace test_matrix
 	}
 }
 
-void testMatrix(testing::Tester& t)
+int main(void)
 {
+	testing::Tester t;
 	t.addTest("Matrix",			test_matrix::intro				);
 	t.addTest("Copy Constructor",		test_matrix::test_copy_constructor		);
 	t.addTest("Move Constructor",		test_matrix::test_move_constructor		);
@@ -376,4 +375,6 @@ void testMatrix(testing::Tester& t)
 	t.addTest("/",				test_matrix::test_divides			);
 	t.addTest("* Matrix",			test_matrix::test_matrix_mult			);
 	t.addTest("Transpose",			test_matrix::test_transpose			);
+	t.test();
+	return 0;
 }

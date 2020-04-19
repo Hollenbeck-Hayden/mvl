@@ -1,7 +1,5 @@
 #include "mvl/mvl.h"
 #include "test_suite.h"
-#include "tests.h"
-#include <iostream>
 #include <cmath>
 
 namespace test_vector
@@ -134,8 +132,10 @@ namespace test_vector
 	}
 }
 
-void testVector(testing::Tester& t)
+int main(void)
 {
+	testing::Tester t;
+
 	t.addTest("Vector", test_vector::intro);
 	t.addTest("Vector To Matrix", test_vector::vector_to_matrix);
 	t.addTest("Dot Product", test_vector::dot_product);
@@ -145,4 +145,8 @@ void testVector(testing::Tester& t)
 	t.addTest("Normalized", test_vector::normalized);
 	t.addTest("Cross", test_vector::cross);
 	t.addTest("Is Orthogonal", test_vector::is_orthogonal);
+
+	t.test();
+
+	return 0;
 }
