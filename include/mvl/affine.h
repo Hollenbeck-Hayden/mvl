@@ -1,10 +1,13 @@
+#pragma once
+
+#include "mvl/mvl.h"
 #include <cmath>
-#include <iostream>
-#include <iomanip>
 
 namespace aff
 {
-	// Basis functions
+	template<typename T, size_t N> using HomMatrix = mvl::SMatrix<T,N+1>;
+
+	// Elementary basis
 	template<typename T, size_t N>
 	mvl::Vector<T,N> basis_vector(size_t i)
 	{
@@ -18,7 +21,7 @@ namespace aff
 	template<typename T, size_t N> mvl::Vector<T,N> z_axis() { return basis_vector<T,N>(2); }
 	template<typename T, size_t N> mvl::Vector<T,N> w_axis() { return basis_vector<T,N>(3); }
 
-	// Affine transformations
+	//// Affine Transformations
 	template<typename T, size_t N>
 	HomMatrix<T,N> identity()
 	{
@@ -28,23 +31,41 @@ namespace aff
 		return m;
 	}
 
+	//template<typename T, size_t N> HomMatrix<T,N> translate(T t, size_t axis);
+	//template<typename T, size_t N> HomMatrix<T,N> scale(T t, size_t axis);
+	//template<typename T, size_t N> HomMatrix<T,N> shear(T t, size_t axis);
+	//template<typename T, size_t N> HomMatrix<T,N> reflect(size_t axis);
+	
 	template<typename T, size_t N>
 	HomMatrix<T,N> translate(const mvl::Vector<T,N>& v)
 	{
 		HomMatrix<T,N> mat = identity<T,N>();
 		for (size_t i = 0; i < N; i++)
-			mat(i, N) = v[i];
+			mat(i,N) = v[i];
 		return mat;
 	}
 
+	//template<typename T, size_t N> HomMatrix<T,N> scale(const Vector<T,N>& v);
+	//template<typename T, size_t N> HomMatrix<T,N> shear(const Vector<T,N>& v);
 
+	//// 2D Transformations
+	//template<typename T> HomMatrix<T,2> translate(T x, T y);
+	//template<typename T> HomMatrix<T,2> scale(T x, T y);
+	//template<typename T> HomMatrix<T,2> shear(T x, T y);
+	//template<typename T> HomMatrix<T,2> reflectX();
+	//template<typename T> HomMatrix<T,2> reflectY();
+	//template<typename T> HomMatrix<T,2> rotate(T t);
+
+	//// 3D Transformations
+	//template<typename T> HomMatrix<T,3> translate(T x, T y, T z);
+	//template<typename T> HomMatrix<T,3> scale(T x, T y, T z);
+	//template<typename T> HomMatrix<T,3> shear(T x, T y, T z);
+	//template<typename T> HomMatrix<T,3> reflectX();
+	//template<typename T> HomMatrix<T,3> reflectY();
+	//template<typename T> HomMatrix<T,3> reflectZ();
+	//template<typename T> HomMatrix<T,3> rotate(const Vector<T,3>& axis, T t);
+	
 	// View Matrix
-	template<typename T>
-	HomMatrix<T,3> lookAt(const mvl::Vector<T,3>& camera, const mvl::Vector<T,3>& center, const mvl::Vector<T,3>& up)
-	{
-		return lookTowards(camera, center - camera, up);
-	}
-
 	template<typename T>
 	HomMatrix<T,3> lookTowards(const mvl::Vector<T,3>& camera, const mvl::Vector<T,3>& direction, const mvl::Vector<T,3>& up)
 	{
@@ -69,10 +90,13 @@ namespace aff
 		return mat * translate<T,3>(-camera);
 	}
 
+	template<typename T>
+	HomMatrix<T,3> lookAt(const mvl::Vector<T,3>& camera, const mvl::Vector<T,3>& center, const mvl::Vector<T,3>& up)
+	{
+		return lookTowards(camera, center - camera, up);
+	}
+
 	// Projection Matrix
-	
-	// RTF - right, top, front of the projection box
-	// LBN - left, bottom, near of the projection box
 	template<typename T>
 	HomMatrix<T,3> orthographic(const mvl::Vector<T,3>& rtf, const mvl::Vector<T,3>& lbn)
 	{
@@ -89,7 +113,6 @@ namespace aff
 		
 		return mat;
 	}
-
 
 	template<typename T>
 	HomMatrix<T,3> perspective(T fovy, T aspect, T zNear, T zFar)
