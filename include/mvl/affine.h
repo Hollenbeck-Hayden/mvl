@@ -115,19 +115,44 @@ namespace aff
 	}
 
 	template<typename T>
-	HomMatrix<T,3> perspective(T fovy, T aspect, T zNear, T zFar)
+	HomMatrix<T,3> frustum(const mvl::Vector<T,2>& lr, const mvl::Vector<T,2>& bt, const mvl::Vector<T,2>& nf)
 	{
 		HomMatrix<T,3> mat;
+		T rl_diff = lr[1] - lr[0];
+		T tb_diff = bt[1] - bt[0];
+		T fn_diff = nf[1] - nf[0];
 
-		T fovy2 = fovy / 2.0;
-		T f = cos(fovy2) / sin(fovy2);
-		
-		mat(0,0) = f / aspect;
-		mat(1,1) = f;
-		mat(2,2) = (zNear + zFar) / (zNear - zFar);
-		mat(3,2) = 2 * zNear * zFar / (zNear - zFar);
+		mat(0,0) = 2 * nf[0] / rl_diff;
+		mat(0,1) = 0;
+		mat(0,2) = 0;
+		mat(0,3) = 0;
+
+		mat(1,0) = 0;
+		mat(1,1) = 2 * nf[0] / tb_diff;
+		mat(1,2) = 0;
+		mat(1,3) = 0;
+
+		mat(2,0) = (lr[0] + lr[1]) / rl_diff;
+		mat(2,1) = (bt[0] + bt[1]) / tb_diff;
+		mat(2,2) = -(nf[0] + nf[1]) / fn_diff;
 		mat(2,3) = -1;
-		
-		return mat;
+
+		mat(3,0) = 0;
+		mat(3,1) = 0;
+		mat(3,2) = -2 * nf[0] * nf[1] / fn_diff;
+		mat(3,3) = 0;
+
+		return mvl::transpose(mat);
+	}
+
+	template<typename T>
+	HomMatrix<T,3> perspective(T fovy, T aspect, T zNear, T zFar)
+	{
+		T top = tan(fovy / 2.0) * zNear;
+		T bottom = -top;
+		T right = top * aspect;
+		T left = bottom * aspect;
+
+		return frustum(mvl::Vector<T,2>{left, right}, mvl::Vector<T,2>{bottom, top}, mvl::Vector<T,2>{zNear, zFar});
 	}
 }
